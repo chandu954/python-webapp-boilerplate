@@ -1,0 +1,32 @@
+enableE2eTest: false
+enableBenchmark: false
+
+localstack:
+  name: "localstack"
+  image: "localstack/localstack"
+  service:
+    ports:
+      - port: 4566
+      - port: 4510-4559
+
+backendApi:
+  name: "backend-svc"
+  image: "localhost:32000/backend-svc:latest"
+  serviceHttpPort: 8000
+  awsSecretName: aws-secret
+  awsServiceAccountName: aws-service-account
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 50
+
+pulumi:
+  name: "pulumi"
+  image: "localhost:32000/pulumi:latest"
+
+backendApiBenchmark:
+  name: "backend-svc-benchmark"
+  image: "localhost:32000/backend-svc-k6:latest"
+  reportOutputAbsoluteDirPath: "/tmp/prova"

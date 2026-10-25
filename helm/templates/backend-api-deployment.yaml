@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-svc
+  template:
+    metadata:
+      labels:
+        app: backend-svc
+    spec:
+      serviceAccountName: {{ .Values.backendApi.awsServiceAccountName }}
+      containers:
+        - name: backend-svc
+          image: {{ .Values.backendApi.image }}
+          resources:
+            requests:
+              cpu: "250m"
+          ports:
+            - containerPort: {{ .Values.backendApi.serviceHttpPort }}
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backendApi.awsSecretName }}
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backendApi.awsSecretName }}
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: HTTP_PORT
+              value: "{{ .Values.backendApi.serviceHttpPort }}"
+          envFrom:
+            - configMapRef:
+                name: app-configs
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.backendApi.serviceHttpPort }}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.backendApi.serviceHttpPort }}
+            initialDelaySeconds: 5
+            periodSeconds: 10

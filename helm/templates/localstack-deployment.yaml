@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: localstack
+  annotations:
+    "helm.sh/hook": "post-install"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: localstack
+  template:
+    metadata:
+      labels:
+        app: localstack
+    spec:
+      containers:
+        - name: localstack
+          image: {{ .Values.localstack.image }}
+          ports:
+            - containerPort: 4566
+              protocol: TCP
+            - containerPort: 4510
+              protocol: TCP
+            - containerPort: 4559
+              protocol: TCP
+          env:
+            - name: LOCALSTACK_HOST
+              value: localstack:4566
+            - name: DATA_DIR
+              value: /tmp/localstack/data
